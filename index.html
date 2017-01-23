@@ -74,6 +74,7 @@
 
             socket.on('joined_room', function(pseudo, room) {
                 var current_room = document.getElementById('current_room');
+                room = room;
                 current_room.innerHTML = 'Current Room : '+ room;
                 $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint ' + room +' !</em></p>');
             })
@@ -90,12 +91,7 @@
             
             // Ajoute un message dans la page
             function insereMessage(pseudo, message) {
-                if (message === "/kick") {
-                    var client_id = prompt('id du mec a kick');
-                    socket.emit('kick_client', client_id);
-                } else {
-                    $('#zone_chat').prepend('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
-                }
+                $('#zone_chat').prepend('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
             }
         </script>
     </body>
