@@ -33,12 +33,14 @@
             // Connexion à socket.io
             var socket = io.connect('http://localhost:3000');
 
-            var pseudo = prompt('Quel est votre pseudo ?');
+            /*var pseudo = prompt('Quel est votre pseudo ?');
             socket.emit('nouveau_client', pseudo);
-            document.title = pseudo + ' - ' + document.title;
+            document.title = pseudo + ' - ' + document.title;*/
+            alert('avant de commencer /nick pseudo');
             
             var r1 = document.getElementById('r1');
             var r2 = document.getElementById('r2');
+            var pseudo;
 
             r1.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -83,10 +85,18 @@
             $('#formulaire_chat').submit(function (e) {
                 e.preventDefault;
                 var message = $('#message').val();
-                socket.emit('message', message); // Transmet le message aux autres
-                insereMessage(pseudo, message); // Affiche le message aussi sur notre page
-                $('#message').val('').focus(); // Vide la zone de Chat et remet le focus dessus
-                return false; // Permet de bloquer l'envoi "classique" du formulaire
+
+                if (message.charAt(0) === '/') {
+                    var split = message.split(" ");
+                    pseudo = split[1];
+                    $('#message').val('').focus();
+                    return false;
+                } else {
+                    socket.emit('message', message); // Transmet le message aux autres
+                    insereMessage(pseudo, message); // Affiche le message aussi sur notre page
+                    $('#message').val('').focus(); // Vide la zone de Chat et remet le focus dessus
+                    return false; // Permet de bloquer l'envoi "classique" du formulaire
+                }
             });
             
             // Ajoute un message dans la page

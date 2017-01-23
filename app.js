@@ -10,6 +10,14 @@ app.get('/', function (req, res) {
 });
 
 var current_room;
+var commands = [
+    'nick',
+    'list',
+    'join',
+    'part',
+    'users',
+    'msg'
+];
 
 io.sockets.on('connection', function (socket, pseudo) {
     // Dès qu'on nous donne un pseudo, on le stocke en variable de session et on informe les autres personnes
@@ -29,13 +37,55 @@ io.sockets.on('connection', function (socket, pseudo) {
 
     // Dès qu'on reçoit un message, on récupère le pseudo de son auteur et on le transmet aux autres personnes
     socket.on('message', function (message, room) {
-        console.log(socket.rooms);
+        var firstChar = message.charAt(0);
 
-        console.log('room : ', current_room);
-        message = ent.encode(message);
-        socket.to(current_room).emit('message', {pseudo: socket.pseudo, message: message});
-        //io.sockets.in(room).emit('message', {pseudo: socket.pseudo, message: message, room: room});
-        //socket.broadcast.emit('message', {pseudo: socket.pseudo, message: message});
+        if (firstChar !== '/')
+            socket.to(current_room).emit('message', {pseudo: socket.pseudo, message: message});
+        else {
+            var splitMessage = message.split(" ");
+            var command = splitMessage[0].substr(1);
+            console.log("command : ", command);
+            if (splitMessage.length > 3) {
+                console.log('too many parameters');
+            } else {
+                switch(command) {
+                    case "nick":
+                            if (commands.nick) {
+                                socket.pseudo = splitMessage[1];
+                            }
+                        break;
+                    case "list":
+                            if (commands.list) {
+
+                            }
+
+                        break;
+                    case "join":
+                            if (commands.join) {
+
+                            }
+                        break;
+                    case "part":
+                            if (commands.part) {
+
+                            }
+                        break;
+                    case "users":
+                            if (commands.users) {
+
+                            }
+                        break;
+                    case "msg":
+                            if (commands.msg) {
+
+                            }
+                        break;
+                    default:
+
+                }
+            }
+
+        }
     });
 });
 
