@@ -14,7 +14,9 @@
  
     <body>
         <h1>Fuck NSA !</h1>
-
+        <h2 id="current_room">Current Room : Accueil</h2>
+        <button id="r1" value="r1">R1</button>
+        <button id="r2" value="r2">R2</button>
         <form action="/" method="post" id="formulaire_chat">
             <input type="text" name="message" id="message" placeholder="Votre message..." size="50" autofocus />
             <input type="submit" id="envoi_message" value="Envoyer" />
@@ -31,19 +33,28 @@
             // Connexion à socket.io
             var socket = io.connect('http://localhost:3000');
 
-            // On demande le pseudo, on l'envoie au serveur et on l'affiche dans le titre
             var pseudo = prompt('Quel est votre pseudo ?');
             socket.emit('nouveau_client', pseudo);
             document.title = pseudo + ' - ' + document.title;
+            
+            var r1 = document.getElementById('r1');
+            var r2 = document.getElementById('r2');
+
+            r1.addEventListener('click', function(e) {
+                e.preventDefault();
+                socket.emit('room', r1.value, pseudo);
+            });
+
+            r2.addEventListener('click', function(e) {
+                e.preventDefault();
+                socket.emit('room', r2.value, pseudo);
+            });
+            // On demande le pseudo, on l'envoie au serveur et on l'affiche dans le titre
 
             // Quand on reçoit un message, on l'insère dans la page
             socket.on('message', function(data) {
-                if (data.message === "/kick") {
-                    var client_id = prompt('id du mec a kick');
-                    socket.emit('kick', client_id);
-                } else {
-                    insereMessage(data.pseudo, data.message);
-                }
+                console.log(data);
+                insereMessage(data.pseudo, data.message);
             })
 
             socket.on('disconnect', function(data) {
@@ -59,6 +70,12 @@
             // Quand un nouveau client se connecte, on affiche l'information
             socket.on('nouveau_client', function(pseudo) {
                 $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint le Chat !</em></p>');
+            })
+
+            socket.on('joined_room', function(pseudo, room) {
+                var current_room = document.getElementById('current_room');
+                current_room.innerHTML = 'Current Room : '+ room;
+                $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint ' + room +' !</em></p>');
             })
 
             // Lorsqu'on envoie le formulaire, on transmet le message et on l'affiche sur la page
