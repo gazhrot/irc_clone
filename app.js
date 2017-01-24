@@ -10,14 +10,21 @@ app.get('/', function (req, res) {
 });
 
 var current_room;
+var channel = [
+    'php',
+    'js',
+    'java'
+];
 var commands = [
     'nick',
     'list',
     'join',
     'part',
     'users',
-    'msg'
-];
+    'msg',
+    'leave'
+    ];
+
 
 io.sockets.on('connection', function (socket, pseudo) {
     // Dès qu'on nous donne un pseudo, on le stocke en variable de session et on informe les autres personnes
@@ -33,6 +40,7 @@ io.sockets.on('connection', function (socket, pseudo) {
         socket.join(room);
         socket.emit('joined_room', pseudo, room);
         console.log(current_room,pseudo);
+        console.log(socket.rooms);
     });
 
     // Dès qu'on reçoit un message, on récupère le pseudo de son auteur et on le transmet aux autres personnes
@@ -44,42 +52,52 @@ io.sockets.on('connection', function (socket, pseudo) {
         else {
             var splitMessage = message.split(" ");
             var command = splitMessage[0].substr(1);
+            console.log("split message", splitMessage);
             console.log("command : ", command);
             if (splitMessage.length > 3) {
                 console.log('too many parameters');
             } else {
                 switch(command) {
                     case "nick":
-                            if (commands.nick) {
+                            if (commands[0]) {
                                 socket.pseudo = splitMessage[1];
                             }
                         break;
                     case "list":
-                            if (commands.list) {
-
+                            if (commands[1]) {
+                                socket.emit('list_room', channel);
                             }
-
                         break;
                     case "join":
-                            if (commands.join) {
-
+                            if (commands[2]) {
+                                socket.join(splitMessage[1]);
+                                socket.emit('joined_room', socket.pseudo, splitMessage[1]);
                             }
                         break;
                     case "part":
-                            if (commands.part) {
-
+                            if (commands[3]) {
+                                socket.leave(splitMessage[1]);
+                                socket.emit('leave_room', socket.pseudo, splitMessage[1]);
                             }
                         break;
                     case "users":
-                            if (commands.users) {
-
+                            if (commands[4]) {
+                                var users = [];
+                                io.sockets.sockets.map(function(user) {
+                                    users.push({room: user.rooms, pseudo: user.pseudo});
+                                });
+                                socket.emit('list_user', users);
                             }
                         break;
                     case "msg":
-                            if (commands.msg) {
+                            if (commands[5]) {
 
                             }
                         break;
+                    case "leave":
+                            if (commands[6]) {
+                                socket.disconnect();
+                            }
                     default:
 
                 }
