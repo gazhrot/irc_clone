@@ -69,6 +69,31 @@
             #zone_chat .chat-list li.system:before {
                 content: "* ";
             }
+
+            .l1 {
+                font-weight: bold;
+                color: red;
+            }
+
+            .l2 {
+                font-weight: bold;
+                color: blue;
+            }
+
+            .l3 {
+                font-weight: bold;
+                color: orange;
+            }
+
+            .l4 {
+                font-weight: bold;
+                color: green;
+            }
+
+            .l5 {
+                font-weight: bold;
+                color: purple;
+            }
         </style>
     </head>
  
@@ -136,7 +161,6 @@
             // Lorsqu'on envoie le formulaire, on transmet le message et on l'affiche sur la page
             $('#formulaire_chat').submit(function (e) {
                 e.preventDefault;
-                console.log('asd');
                 var message = $('#chatInput').val();
                 var split = message.split(" ");
                 console.log(split[0]);
@@ -144,6 +168,17 @@
                     pseudo = split[1];
                     socket.emit('nouveau_client', pseudo);
                     socket.emit('room', 'accueil', pseudo);
+                    $('#chatInput').val('').focus();
+                    return false;
+                } else if (split[0] === '/help') {
+                    _help("******************");
+                    _help("/nick `pseudo`");
+                    _help("/list `string`");
+                    _help("/join `channel`");
+                    _help("/part `channel`");
+                    _help("/users");
+                    _help("/msg `pseudo`");
+                    _help("******************");
                     $('#chatInput').val('').focus();
                     return false;
                 } else {
@@ -165,7 +200,12 @@
                 if (message.charAt(0) === '/')
                     return false;
                 else 
-                    $('#chatList').prepend('<p class="me"><strong>' + pseudo + '</strong> ' + message + '</p>');
+                    var rand = Math.floor(Math.random() * 5) + 1  ;
+                    $('#chatList').prepend('<p class="me"><span class="l'+rand+'">' + pseudo+ '</span> : ' + message + '</p>');
+            }
+
+            function _help(msg) {
+                 $('#chatList').prepend('<li class="system">' + msg + '</li>');
             }
         </script>
     </body>
