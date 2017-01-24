@@ -4,10 +4,70 @@
         <meta charset="utf-8" />
         <title>Private Chat</title>
         <style>
+            * {
+                font-family: sans-serif;
+                font-size: 14px;
+            }
+
             #zone_chat strong {
                 color: white;
                 background-color: black;
                 padding: 2px;
+            }
+
+            #zone_chat {
+                width: 300px;
+                height: 320px;
+                background: rgba(255, 255, 255, 0.7);
+                bottom: 5px;
+                left: 5px;
+                border-radius: 5px;
+                pointer-events: none;
+                border: 1px solid #CCC;
+                margin: 10px;
+                box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            }
+
+            #zone_chat .chat-input {
+                pointer-events: all;
+                box-sizing: border-box;
+                width: 100%;
+                padding: 8px;
+                background: transparent;
+                border: none;
+                border-top: 1px solid #DDD;
+                outline: none;
+            }
+
+            #zone_chat .chat-list {
+                padding: 5px;
+                margin: 0;
+                list-style: none;
+                box-sizing: border-box;
+                height: 285px;
+                overflow: hidden;
+            }
+
+            #zone_chat .chat-list li {
+                padding: 2px;
+                margin: 3px;
+            }
+
+            #zone_chat .chat-list li.me b {
+                color: #ea6153;
+            }
+
+            #zone_chat .chat-list li.friend b {
+                color: #2ecc71;
+            }
+
+            #zone_chat .chat-list li.system {
+                color: #777;
+                font-style: italic;
+            }
+
+            #zone_chat .chat-list li.system:before {
+                content: "* ";
             }
         </style>
     </head>
@@ -15,16 +75,13 @@
     <body>
         <h1>Fuck NSA !</h1>
         <h2 id="current_room">Current Room : Accueil</h2>
-        <button id="r1" value="r1">R1</button>
-        <button id="r2" value="r2">R2</button>
-        <form action="/" method="post" id="formulaire_chat">
-            <input type="text" name="message" id="message" placeholder="Votre message..." size="50" autofocus />
-            <input type="submit" id="envoi_message" value="Envoyer" />
-        </form>
 
-        <section id="zone_chat">
-            
-        </section>
+        <div id="zone_chat">
+            <ul id="chatList" class="chat-list"></ul>
+              <form action="/" method="post" id="formulaire_chat">
+                <input id="chatInput" type="text" class="chat-input" placeholder="Chat here..." maxlength="35" />
+            </form>
+        </div>
 
         <script src="/socket.io/socket.io.js"></script>
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
@@ -38,19 +95,8 @@
             document.title = pseudo + ' - ' + document.title;*/
             alert('avant de commencer /nick pseudo');
             
-            var r1 = document.getElementById('r1');
-            var r2 = document.getElementById('r2');
             var pseudo;
 
-            r1.addEventListener('click', function(e) {
-                e.preventDefault();
-                socket.emit('room', r1.value, pseudo);
-            });
-
-            r2.addEventListener('click', function(e) {
-                e.preventDefault();
-                socket.emit('room', r2.value, pseudo);
-            });
             // On demande le pseudo, on l'envoie au serveur et on l'affiche dans le titre
 
             // Quand on reçoit un message, on l'insère dans la page
@@ -63,13 +109,9 @@
                 window.location = "http://localhost:3000";
             })
 
-            socket.on('leave_client' , function(client_id) {
-                console.log('test');
-                $('#zone_chat').prepend('<p><em>' + client_id + ' a ete kick !</em></p>');
-            })
             // Quand un nouveau client se connecte, on affiche l'information
             socket.on('nouveau_client', function(pseudo) {
-                $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint le Chat !</em></p>');
+                $('#chatList').prepend('<li class="system">' + pseudo + ' a rejoint le Chat !</li>');
             })
 
             socket.on('list_user', function(data) {
@@ -81,32 +123,33 @@
                 var current_room = document.getElementById('current_room');
                 room = room;
                 current_room.innerHTML = 'Current Room : '+ room;
-                $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint ' + room +' !</em></p>');
+                $('#chatList').prepend('<li class="system">' + pseudo + ' a rejoint ' + room +' !</li>');
             })
 
             socket.on('leave_room', function(pseudo, room) {
                 var current_room = document.getElementById('current_room');
                 room = room;
                 current_room.innerHTML = 'Current Room : '+ room;
-                $('#zone_chat').prepend('<p><em>' + pseudo + ' a quitter ' + room +' !</em></p>');
+                $('#chatList').prepend('<li class="system">' + pseudo + ' a quitter ' + room +' !</li>');
             })
 
             // Lorsqu'on envoie le formulaire, on transmet le message et on l'affiche sur la page
             $('#formulaire_chat').submit(function (e) {
                 e.preventDefault;
-                var message = $('#message').val();
+                console.log('asd');
+                var message = $('#chatInput').val();
                 var split = message.split(" ");
                 console.log(split[0]);
                 if (split[0] === '/nick') {
                     pseudo = split[1];
                     socket.emit('nouveau_client', pseudo);
                     socket.emit('room', 'accueil', pseudo);
-                    $('#message').val('').focus();
+                    $('#chatInput').val('').focus();
                     return false;
                 } else {
                     socket.emit('message', message); // Transmet le message aux autres
                     insereMessage(pseudo, message); // Affiche le message aussi sur notre page
-                    $('#message').val('').focus(); // Vide la zone de Chat et remet le focus dessus
+                    $('#chatInput').val('').focus(); // Vide la zone de Chat et remet le focus dessus
                     return false; // Permet de bloquer l'envoi "classique" du formulaire
                 }
             });
@@ -122,7 +165,7 @@
                 if (message.charAt(0) === '/')
                     return false;
                 else 
-                    $('#zone_chat').prepend('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
+                    $('#chatList').prepend('<p class="me"><strong>' + pseudo + '</strong> ' + message + '</p>');
             }
         </script>
     </body>
