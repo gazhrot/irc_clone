@@ -59,10 +59,8 @@
                 insereMessage(data.pseudo, data.message);
             })
 
-            socket.on('disconnect', function(data) {
-                socket.emit('leave_client', data.client_id);
-                alert('you are kick from the server');
-                //window.location = data.location;
+            socket.on('disconnect', function() {
+                window.location = "http://localhost:3000";
             })
 
             socket.on('leave_client' , function(client_id) {
@@ -74,6 +72,11 @@
                 $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint le Chat !</em></p>');
             })
 
+            socket.on('list_user', function(data) {
+                // tab users
+                console.log("list data", data);
+            });
+
             socket.on('joined_room', function(pseudo, room) {
                 var current_room = document.getElementById('current_room');
                 room = room;
@@ -81,14 +84,23 @@
                 $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint ' + room +' !</em></p>');
             })
 
+            socket.on('leave_room', function(pseudo, room) {
+                var current_room = document.getElementById('current_room');
+                room = room;
+                current_room.innerHTML = 'Current Room : '+ room;
+                $('#zone_chat').prepend('<p><em>' + pseudo + ' a quitter ' + room +' !</em></p>');
+            })
+
             // Lorsqu'on envoie le formulaire, on transmet le message et on l'affiche sur la page
             $('#formulaire_chat').submit(function (e) {
                 e.preventDefault;
                 var message = $('#message').val();
-
-                if (message.charAt(0) === '/') {
-                    var split = message.split(" ");
+                var split = message.split(" ");
+                console.log(split[0]);
+                if (split[0] === '/nick') {
                     pseudo = split[1];
+                    socket.emit('nouveau_client', pseudo);
+                    socket.emit('room', 'accueil', pseudo);
                     $('#message').val('').focus();
                     return false;
                 } else {
@@ -99,9 +111,18 @@
                 }
             });
             
+            socket.on('list_room', function(channel) {
+                channel.forEach(function(chan) {
+                    insereMessage('LIST', chan);
+                });
+            })
+
             // Ajoute un message dans la page
             function insereMessage(pseudo, message) {
-                $('#zone_chat').prepend('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
+                if (message.charAt(0) === '/')
+                    return false;
+                else 
+                    $('#zone_chat').prepend('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
             }
         </script>
     </body>
