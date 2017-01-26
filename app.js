@@ -10,6 +10,7 @@ app.get('/', function (req, res) {
 });
 
 var current_room;
+var users_connected = [];
 var channel = [
     'php',
     'js',
@@ -32,6 +33,8 @@ io.sockets.on('connection', function (socket, pseudo) {
     socket.on('nouveau_client', function(pseudo) {
         pseudo = ent.encode(pseudo);
         socket.pseudo = pseudo;
+        users_connected.push({id: socket.id, pseudo: pseudo});
+        console.log(users_connected);
         socket.broadcast.emit('nouveau_client', pseudo);
     });
 
@@ -91,7 +94,14 @@ io.sockets.on('connection', function (socket, pseudo) {
                         break;
                     case "msg":
                             if (commands[5]) {
-
+                                var private_msg = {
+                                    pseudo: socket.pseudo,
+                                    message: splitMessage[2]
+                                };
+                                users_connected.forEach(function(user) {
+                                    if (user.pseudo === splitMessage[1])
+                                        socket.broadcast.to(user.id).emit('private_msg', private_msg);
+                                });
                             }
                         break;
                     case "leave":

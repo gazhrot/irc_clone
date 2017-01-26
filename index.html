@@ -66,6 +66,11 @@
                 font-style: italic;
             }
 
+            #zone_chat .chat-list li.private {
+                color: #FF00FF;
+                font-style: italic;
+            }
+
             #zone_chat .chat-list li.system:before {
                 content: "* ";
             }
@@ -151,6 +156,11 @@
                 $('#chatList').prepend('<li class="system">' + pseudo + ' a rejoint ' + room +' !</li>');
             })
 
+            socket.on('private_msg', function(data) {
+                console.log('private_msg', data);
+                $('#chatList').prepend('<li class="private">De '+data.pseudo+': '+data.message+' !</li>');
+            })
+
             socket.on('leave_room', function(pseudo, room) {
                 var current_room = document.getElementById('current_room');
                 room = room;
@@ -197,11 +207,20 @@
 
             // Ajoute un message dans la page
             function insereMessage(pseudo, message) {
-                if (message.charAt(0) === '/')
-                    return false;
-                else 
+                if (message.charAt(0) === '/') {
+                    var split = message.split(" ");
+                    if (split[0] === '/msg') {
+                        console.log('before splice ',split);
+                        var receiver = split[1];
+                        split.splice(0,2);
+                        $('#chatList').prepend('<li class="private">A '+ receiver + ' : ' + split.join(" ") + '</li>'); 
+                    }
+                    else
+                        return false;   
+                } else  {
                     var rand = Math.floor(Math.random() * 5) + 1  ;
                     $('#chatList').prepend('<p class="me"><span class="l'+rand+'">' + pseudo+ '</span> : ' + message + '</p>');
+                }
             }
 
             function _help(msg) {
