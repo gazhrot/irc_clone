@@ -158,7 +158,7 @@
 
             socket.on('private_msg', function(data) {
                 console.log('private_msg', data);
-                $('#chatList').prepend('<li class="private">De '+data.pseudo+': '+data.message+' !</li>');
+                $('#chatList').prepend('<li class="private">De '+data.pseudo+': '+data.message+'</li>');
             })
 
             socket.on('leave_room', function(pseudo, room) {
@@ -201,7 +201,7 @@
             
             socket.on('list_room', function(channel) {
                 channel.forEach(function(chan) {
-                    insereMessage('LIST', chan);
+                    insereMessage('`LIST`', chan);
                 });
             })
 

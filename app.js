@@ -55,11 +55,14 @@ io.sockets.on('connection', function (socket, pseudo) {
         else {
             var splitMessage = message.split(" ");
             var command = splitMessage[0].substr(1);
-            console.log("split message", splitMessage);
-            console.log("command : ", command);
-            if (splitMessage.length > 3) {
+            if (splitMessage.length > 3 && command !== 'msg') {
                 console.log('too many parameters');
             } else {
+                if (command === 'msg') {
+                    var pseudo_sender = splitMessage[1];
+                    splitMessage.splice(0,2)
+                    var msg_priv = splitMessage.join(" ");
+                }
                 switch(command) {
                     case "nick":
                             if (commands[0]) {
@@ -94,12 +97,15 @@ io.sockets.on('connection', function (socket, pseudo) {
                         break;
                     case "msg":
                             if (commands[5]) {
+                                console.log(splitMessage);
                                 var private_msg = {
                                     pseudo: socket.pseudo,
-                                    message: splitMessage[2]
+                                    message: msg_priv
                                 };
                                 users_connected.forEach(function(user) {
-                                    if (user.pseudo === splitMessage[1])
+                                    console.log('user_pseudo foreach : ',user.pseudo);
+                                    console.log('user_pseudo sender : ', pseudo_sender);
+                                    if (user.pseudo === pseudo_sender)
                                         socket.broadcast.to(user.id).emit('private_msg', private_msg);
                                 });
                             }
