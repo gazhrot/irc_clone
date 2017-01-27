@@ -192,10 +192,15 @@
                     $('#chatInput').val('').focus();
                     return false;
                 } else {
-                    socket.emit('message', message); // Transmet le message aux autres
-                    insereMessage(pseudo, message); // Affiche le message aussi sur notre page
-                    $('#chatInput').val('').focus(); // Vide la zone de Chat et remet le focus dessus
-                    return false; // Permet de bloquer l'envoi "classique" du formulaire
+                    if (message.length != 0) {
+                        socket.emit('message', message); // Transmet le message aux autres
+                        insereMessage(pseudo, message); // Affiche le message aussi sur notre page
+                        $('#chatInput').val('').focus(); // Vide la zone de Chat et remet le focus dessus
+                        return false; // Permet de bloquer l'envoi "classique" du formulaire
+                    } else {
+                        alert('vous ne pouvez pas envoyer de message vide :O');
+                        return false; // Permet de bloquer l'envoi "classique" du formulaire
+                    }
                 }
             });
             
